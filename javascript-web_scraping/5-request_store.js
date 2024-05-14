@@ -1,10 +1,9 @@
 #!/usr/bin/node
-const fs = require("fs");
 const request = require("request");
 const url = process.argv[2];
 const path = process.argv[3];
 
-request(url, (err, response, body) => {
+request(url, (err, data, body) => {
   if (err) {
     console.log(err);
   } else {
