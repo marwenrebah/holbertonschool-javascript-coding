@@ -7,12 +7,9 @@ request(url, function (error, response, body) {
   if (error) {
     console.error(error);
   } else {
-    let count = 0;
-    for (const character of JSON.parse(body).characters) {
-      if (character.includes("/18/")) {
-        count++;
-      }
-    }
-    console.log(count);
+    const result = JSON.parse(body).characters.filter((character) =>
+      character.includes("/18/")
+    );
+    console.log(result.length);
   }
 });
