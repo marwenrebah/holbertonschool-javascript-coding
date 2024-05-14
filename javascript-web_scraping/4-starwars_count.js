@@ -2,15 +2,15 @@
 
 const request = require("request");
 
-request(process.argv[2], (error, response, body) => {
+request(process.argv[2], function (error, response, body) {
   if (!error) {
     const movies = JSON.parse(body).results;
-    let count = 0;
-    for (const movie of movies) {
-      if (movie.characters.some((character) => character.endsWith("/18/"))) {
-        count++;
-      }
-    }
-    console.log(count);
+    console.log(
+      movies.reduce((count, movie) => {
+        return movie.characters.find((character) => character.endsWith("/18/"))
+          ? count + 1
+          : count;
+      }, 0)
+    );
   }
 });
