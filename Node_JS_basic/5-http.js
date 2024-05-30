@@ -1,44 +1,51 @@
 const http = require('http');
 const fs = require('fs').promises;
+const url = require('url');
 
-const countStudents = async (path) => {
+const processStudents = async (filePath) => {
   try {
-    const data = await fs.readFile(path, 'utf8');
-    const students = data.trim().split('\n').slice(1).filter(Boolean);
-    const totalStudents = students.length;
+    const fileData = await fs.readFile(filePath, 'utf8');
+    const fileLines = fileData.trim().split('\n');
 
-    const fields = students.reduce((acc, student) => {
-      const [firstname, , , field] = student.split(',');
-      acc[field] = acc[field] || [];
-      acc[field].push(firstname);
-      return acc;
-    }, {});
+    const studentRecords = fileLines.slice(1).filter((line) => line.trim() !== '');
+    const totalStudents = studentRecords.length;
 
-    let result = `Number of students: ${totalStudents}`;
-    for (const [field, names] of Object.entries(fields)) {
-      result += `\nNumber of students in ${field}: ${names.length}. List: ${names.join(', ')}`;
+    const fieldGroups = {};
+
+    studentRecords.forEach((record) => {
+      const [firstName, , , field] = record.split(',');
+      if (!fieldGroups[field]) {
+        fieldGroups[field] = [];
+      }
+      fieldGroups[field].push(firstName);
+    });
+
+    let result = `Number of students: ${totalStudents}\n`;
+    for (const [field, names] of Object.entries(fieldGroups)) {
+      result += `Number of students in ${field}: ${names.length}. List: ${names.join(', ')}\n`;
     }
-    return result;
+    return result.trim();
   } catch (error) {
     throw new Error('Cannot load the database');
   }
 };
 
-const app = http.createServer(async (req, res) => {
+// Create the HTTP server
+const app = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  if (req.url === '/') {
+  const requestPath = url.parse(req.url, true).path;
+  if (requestPath === '/') {
     res.end('Hello Holberton School!');
-  } else if (req.url === '/students') {
-    try {
-      const data = await countStudents(process.argv[2]);
-      res.end(`This is the list of our students\n${data}`);
-    } catch (error) {
-      res.end(error.message);
-    }
+  } else if (requestPath === '/students') {
+    res.write('This is the list of our students\n');
+    processStudents(process.argv[2])
+      .then((data) => { res.end(data); })
+      .catch((error) => { res.end(error.message); });
   } else {
     res.end('Invalid endpoint');
   }
 });
 
 app.listen(1245);
+
 module.exports = app;
