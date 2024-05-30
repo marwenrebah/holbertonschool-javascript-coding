@@ -1,6 +1,6 @@
 import { readDatabase } from '../utils';
 
-export default class StudentsController {
+class StudentsController {
   static getAllStudents(request, response) {
     response.statusCode = 200;
     response.setHeader('Content-Type', 'text/plain');
@@ -37,3 +37,5 @@ export default class StudentsController {
     }).catch((err) => response.send(err.message));
   }
 }
+
+export default StudentsController;
